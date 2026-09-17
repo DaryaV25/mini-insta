@@ -1,177 +1,176 @@
+require("dotenv").config();
 const express = require("express");
+const db = require("./models");
+
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-const PORT = 3000;
+db.sequelize
+  .authenticate()
+  .then(() => console.log("Подключение к PostgreSQL успешно"))
+  .catch((err) => console.error("Ошибка подключения к базе:", err));
 
-// ===== Данные в памяти =====
-let photos = [
-  {
-    id: 1,
-    title: "Закат на море",
-    imageUrl: "https://example.com/photos/sunset.jpg",
-    filter: "vintage",
-    album: "Путешествия",
-    likes: 42,
-  },
-  {
-    id: 2,
-    title: "Кофе в городе",
-    imageUrl: "https://example.com/photos/coffee.jpg",
-    filter: "sepia",
-    album: "Повседневность",
-    likes: 18,
-  },
-  {
-    id: 3,
-    title: "Горы зимой",
-    imageUrl: "https://example.com/photos/mountains.jpg",
-    filter: "none",
-    album: "Путешествия",
-    likes: 67,
-  },
-];
-
-let nextId = 4;
-
-// ===== Маршруты =====
-
-// 1. GET /photos — получить все фотографии
-app.get("/photos", (req, res) => {
-  res.json(photos);
-});
-
-// 2. GET /photos/:id — получить одну фотографию по id
-app.get("/photos/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-
-  if (isNaN(id)) {
-    return res.status(400).json({ error: "Неверный формат id" });
-  }
-
-  const photo = photos.find((p) => p.id === id);
-
-  if (!photo) {
-    return res.status(404).json({ error: "Фотография не найдена" });
-  }
-
-  res.json(photo);
-});
-
-// 3. POST /photos — добавить новую фотографию
-app.post("/photos", (req, res) => {
-  const { title, imageUrl, filter, album, likes } = req.body;
-
-  // Валидация обязательных полей
-  if (!title || !imageUrl || !filter || !album) {
-    return res.status(400).json({
-      error: "Обязательные поля: title, imageUrl, filter, album",
+app.get("/photos", async (req, res) => {
+  try {
+    const photos = await db.Photo.findAll({
+      order: [["id", "ASC"]],
     });
+    res.json(photos);
+  } catch (error) {
+    res.status(500).json({ error: "Ошибка сервера", details: error.message });
   }
-
-  // Проверка допустимых фильтров
-  const allowedFilters = [
-    "none",
-    "sepia",
-    "grayscale",
-    "vintage",
-    "warm",
-    "cool",
-  ];
-  if (!allowedFilters.includes(filter)) {
-    return res.status(400).json({
-      error: `Недопустимый фильтр. Разрешены: ${allowedFilters.join(", ")}`,
-    });
-  }
-
-  const newPhoto = {
-    id: nextId++,
-    title,
-    imageUrl,
-    filter,
-    album,
-    likes: likes || 0, // если likes не передали — ставим 0
-  };
-
-  photos.push(newPhoto);
-  res.status(201).json(newPhoto);
 });
 
-// 4. PUT /photos/:id — полное обновление фотографии
-app.put("/photos/:id", (req, res) => {
-  const id = parseInt(req.params.id);
+app.get("/photos/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
 
-  if (isNaN(id)) {
-    return res.status(400).json({ error: "Неверный формат id" });
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Неверный формат id" });
+    }
+
+    const photo = await db.Photo.findByPk(id);
+
+    if (!photo) {
+      return res.status(404).json({ error: "Фотография не найдена" });
+    }
+
+    res.json(photo);
+  } catch (error) {
+    res.status(500).json({ error: "Ошибка сервера", details: error.message });
   }
-
-  const index = photos.findIndex((p) => p.id === id);
-
-  if (index === -1) {
-    return res.status(404).json({ error: "Фотография не найдена" });
-  }
-
-  const { title, imageUrl, filter, album, likes } = req.body;
-
-  if (!title || !imageUrl || !filter || !album) {
-    return res.status(400).json({
-      error: "Обязательные поля: title, imageUrl, filter, album",
-    });
-  }
-
-  const allowedFilters = [
-    "none",
-    "sepia",
-    "grayscale",
-    "vintage",
-    "warm",
-    "cool",
-  ];
-  if (!allowedFilters.includes(filter)) {
-    return res.status(400).json({
-      error: `Недопустимый фильтр. Разрешены: ${allowedFilters.join(", ")}`,
-    });
-  }
-
-  // Полностью заменяем объект (id оставляем старый)
-  photos[index] = {
-    id,
-    title,
-    imageUrl,
-    filter,
-    album,
-    likes: likes !== undefined ? likes : photos[index].likes,
-  };
-
-  res.json(photos[index]);
 });
 
-// 5. DELETE /photos/:id — удалить фотографию
-app.delete("/photos/:id", (req, res) => {
-  const id = parseInt(req.params.id);
+app.post("/photos", async (req, res) => {
+  try {
+    const { title, imageUrl, filter, album, likes } = req.body;
 
-  if (isNaN(id)) {
-    return res.status(400).json({ error: "Неверный формат id" });
+    if (!title || !imageUrl || !filter || !album) {
+      return res.status(400).json({
+        error: "Обязательные поля: title, imageUrl, filter, album",
+      });
+    }
+
+    const allowedFilters = [
+      "none",
+      "sepia",
+      "grayscale",
+      "vintage",
+      "warm",
+      "cool",
+    ];
+    if (!allowedFilters.includes(filter)) {
+      return res.status(400).json({
+        error: `Недопустимый фильтр. Разрешены: ${allowedFilters.join(", ")}`,
+      });
+    }
+
+    const newPhoto = await db.Photo.create({
+      title,
+      imageUrl,
+      filter,
+      album,
+      likes: likes ?? 0,
+    });
+
+    res.status(201).json(newPhoto);
+  } catch (error) {
+    if (error.name === "SequelizeValidationError") {
+      return res.status(400).json({
+        error: error.errors.map((e) => e.message),
+      });
+    }
+    res.status(500).json({ error: "Ошибка сервера", details: error.message });
   }
-
-  const index = photos.findIndex((p) => p.id === id);
-
-  if (index === -1) {
-    return res.status(404).json({ error: "Фотография не найдена" });
-  }
-
-  const deleted = photos.splice(index, 1)[0];
-  res.json({ message: "Фотография удалена", deleted });
 });
 
-// ===== Глобальный обработчик ошибок =====
+app.put("/photos/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Неверный формат id" });
+    }
+
+    const photo = await db.Photo.findByPk(id);
+
+    if (!photo) {
+      return res.status(404).json({ error: "Фотография не найдена" });
+    }
+
+    const { title, imageUrl, filter, album, likes } = req.body;
+
+    if (!title || !imageUrl || !filter || !album) {
+      return res.status(400).json({
+        error: "Обязательные поля: title, imageUrl, filter, album",
+      });
+    }
+
+    const allowedFilters = [
+      "none",
+      "sepia",
+      "grayscale",
+      "vintage",
+      "warm",
+      "cool",
+    ];
+    if (!allowedFilters.includes(filter)) {
+      return res.status(400).json({
+        error: `Недопустимый фильтр. Разрешены: ${allowedFilters.join(", ")}`,
+      });
+    }
+
+    await photo.update({
+      title,
+      imageUrl,
+      filter,
+      album,
+      likes: likes !== undefined ? likes : photo.likes,
+    });
+
+    res.json(photo);
+  } catch (error) {
+    if (error.name === "SequelizeValidationError") {
+      return res.status(400).json({
+        error: error.errors.map((e) => e.message),
+      });
+    }
+    res.status(500).json({ error: "Ошибка сервера", details: error.message });
+  }
+});
+
+app.delete("/photos/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Неверный формат id" });
+    }
+
+    const photo = await db.Photo.findByPk(id);
+
+    if (!photo) {
+      return res.status(404).json({ error: "Фотография не найдена" });
+    }
+
+    await photo.destroy();
+
+    res.json({
+      message: "Фотография удалена",
+      deleted: photo,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Ошибка сервера", details: error.message });
+  }
+});
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Внутренняя ошибка сервера" });
 });
 
-// ===== Запуск сервера =====
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
