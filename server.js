@@ -1,4 +1,6 @@
 require("dotenv").config();
+const authRoutes = require("./routes/auth");
+const { authenticate, isAdmin } = require("./middleware/auth");
 const express = require("express");
 const db = require("./models");
 
@@ -6,6 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use("/auth", authRoutes);
 
 db.sequelize
   .authenticate()
@@ -38,6 +41,22 @@ app.get("/photos/:id", async (req, res) => {
     }
 
     res.json(photo);
+  } catch (error) {
+    res.status(500).json({ error: "Ошибка сервера", details: error.message });
+  }
+});
+
+app.get("/profile", authenticate, async (req, res) => {
+  try {
+    const user = await db.User.findByPk(req.user.id, {
+      attributes: ["id", "email", "role", "createdAt"],
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
+
+    res.json(user);
   } catch (error) {
     res.status(500).json({ error: "Ошибка сервера", details: error.message });
   }
@@ -141,7 +160,7 @@ app.put("/photos/:id", async (req, res) => {
   }
 });
 
-app.delete("/photos/:id", async (req, res) => {
+app.delete("/photos/:id", authenticate, isAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 
