@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const { Op } = require("sequelize");
 const db = require("./models");
 
 const authRoutes = require("./routes/auth");
@@ -11,6 +12,17 @@ const mongoPhotoRoutes = require("./mongo/routes/photos");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", process.env.CLIENT_ORIGIN || "*");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+  );
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
 
 app.use(express.json());
 app.get("/", (req, res) => {
@@ -32,7 +44,20 @@ const connectPostgres = async () => {
 
 app.get("/photos", async (req, res) => {
   try {
+    const where = {};
+    const search =
+      typeof req.query.search === "string" ? req.query.search.trim() : "";
+
+    if (search) {
+      const pattern = `%${search.replace(/[\\%_]/g, "\\$&")}%`;
+      where[Op.or] = [
+        { title: { [Op.iLike]: pattern } },
+        { album: { [Op.iLike]: pattern } },
+      ];
+    }
+
     const photos = await db.Photo.findAll({
+      where,
       order: [["id", "ASC"]],
     });
     res.json(photos);

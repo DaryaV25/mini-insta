@@ -37,6 +37,3 @@ Content-Type: application/json
 
 DELETE http://localhost:3000/photos/6
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc5MDc1MDA5OSwiZXhwIjoxNzkwNzUzNjk5fQ.MoGW0Zn-JJSmVrWb-QeXi_bsQyA3kaxM6uHgODiXn7M
-
-
-GET http://localhost:3000/mongo/photos 
