@@ -1,34 +1,7 @@
-GET http://localhost:3000/photos
-
-GET http://localhost:3000/photos/1
-
-GET http://localhost:3000/photos/5
-
-POST http://localhost:3000/photos
-Content-Type: application/json
-{
-  "title": "Утренний кофе",
-  "imageUrl": "https://example.com/photos/coffee-morning.jpg",
-  "filter": "warm",
-  "album": "Повседневность",
-  "likes": 5
-}
-
-PUT http://localhost:3000/photos/1
-Content-Type: application/json
-{
-  "title": "Закат на море (обновлённый)",
-  "imageUrl": "https://example.com/photos/sunset-new.jpg",
-  "filter": "sepia",
-  "album": "Путешествия",
-  "likes": 55
-}
-
-DELETE http://localhost:3000/photos/2
-
 
 POST http://localhost:3000/auth/register
 Content-Type: application/json
+
 {
   "email": "user@example.com",
   "password": "123456"
@@ -36,10 +9,34 @@ Content-Type: application/json
 
 POST http://localhost:3000/auth/login
 Content-Type: application/json
+
 {
   "email": "user@example.com",
   "password": "123456"
 }
 
 GET http://localhost:3000/profile
-Authorization: Bearer <твой_токен>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE3OTA3NDk2NDgsImV4cCI6MTc5MDc1MzI0OH0.mmzvsCwuVl8pIv03kmF11b4Wto3QZeMQM-L7j3oXXSk
+
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "admin123",
+  "role": "admin"
+}
+
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "admin123"
+}
+
+DELETE http://localhost:3000/photos/6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc5MDc1MDA5OSwiZXhwIjoxNzkwNzUzNjk5fQ.MoGW0Zn-JJSmVrWb-QeXi_bsQyA3kaxM6uHgODiXn7M
+
+
+GET http://localhost:3000/mongo/photos 

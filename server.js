@@ -1,19 +1,34 @@
 require("dotenv").config();
-const authRoutes = require("./routes/auth");
-const { authenticate, isAdmin } = require("./middleware/auth");
+
 const express = require("express");
 const db = require("./models");
+
+const authRoutes = require("./routes/auth");
+const { authenticate, isAdmin } = require("./middleware/auth");
+
+const connectMongo = require("./mongo/db");
+const mongoPhotoRoutes = require("./mongo/routes/photos");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use("/auth", authRoutes);
+app.get("/", (req, res) => {
+  res.send("Сервер работает успешно!");
+});
 
-db.sequelize
-  .authenticate()
-  .then(() => console.log("Подключение к PostgreSQL успешно"))
-  .catch((err) => console.error("Ошибка подключения к базе:", err));
+app.use("/auth", authRoutes);
+app.use("/mongo/photos", mongoPhotoRoutes);
+
+const connectPostgres = async () => {
+  try {
+    await db.sequelize.authenticate();
+    console.log("Подключение к PostgreSQL успешно");
+  } catch (err) {
+    console.error("Ошибка подключения к PostgreSQL:", err.message);
+    throw err;
+  }
+};
 
 app.get("/photos", async (req, res) => {
   try {
@@ -22,7 +37,10 @@ app.get("/photos", async (req, res) => {
     });
     res.json(photos);
   } catch (error) {
-    res.status(500).json({ error: "Ошибка сервера", details: error.message });
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error.message,
+    });
   }
 });
 
@@ -42,7 +60,10 @@ app.get("/photos/:id", async (req, res) => {
 
     res.json(photo);
   } catch (error) {
-    res.status(500).json({ error: "Ошибка сервера", details: error.message });
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error.message,
+    });
   }
 });
 
@@ -58,7 +79,10 @@ app.get("/profile", authenticate, async (req, res) => {
 
     res.json(user);
   } catch (error) {
-    res.status(500).json({ error: "Ошибка сервера", details: error.message });
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error.message,
+    });
   }
 });
 
@@ -80,6 +104,7 @@ app.post("/photos", async (req, res) => {
       "warm",
       "cool",
     ];
+
     if (!allowedFilters.includes(filter)) {
       return res.status(400).json({
         error: `Недопустимый фильтр. Разрешены: ${allowedFilters.join(", ")}`,
@@ -101,7 +126,11 @@ app.post("/photos", async (req, res) => {
         error: error.errors.map((e) => e.message),
       });
     }
-    res.status(500).json({ error: "Ошибка сервера", details: error.message });
+
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error.message,
+    });
   }
 });
 
@@ -135,6 +164,7 @@ app.put("/photos/:id", async (req, res) => {
       "warm",
       "cool",
     ];
+
     if (!allowedFilters.includes(filter)) {
       return res.status(400).json({
         error: `Недопустимый фильтр. Разрешены: ${allowedFilters.join(", ")}`,
@@ -156,7 +186,11 @@ app.put("/photos/:id", async (req, res) => {
         error: error.errors.map((e) => e.message),
       });
     }
-    res.status(500).json({ error: "Ошибка сервера", details: error.message });
+
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error.message,
+    });
   }
 });
 
@@ -181,15 +215,33 @@ app.delete("/photos/:id", authenticate, isAdmin, async (req, res) => {
       deleted: photo,
     });
   } catch (error) {
-    res.status(500).json({ error: "Ошибка сервера", details: error.message });
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error.message,
+    });
   }
 });
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: "Внутренняя ошибка сервера" });
+
+  res.status(500).json({
+    error: "Внутренняя ошибка сервера",
+  });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+const start = async () => {
+  try {
+    await connectPostgres();
+    await connectMongo();
+
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("Не удалось запустить сервер:", error.message);
+    process.exit(1);
+  }
+};
+
+start();

@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 
-// Проверка JWT
 const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -12,7 +11,7 @@ const authenticate = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { id, email, role }
+    req.user = decoded;
     next();
   } catch (error) {
     return res
@@ -21,7 +20,6 @@ const authenticate = (req, res, next) => {
   }
 };
 
-// Проверка роли admin (дополнительный механизм RBAC)
 const isAdmin = (req, res, next) => {
   if (req.user.role !== "admin") {
     return res

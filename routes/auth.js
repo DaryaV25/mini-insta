@@ -5,7 +5,6 @@ const db = require("../models");
 
 const router = express.Router();
 
-// POST /auth/register
 router.post("/register", async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -20,7 +19,6 @@ router.post("/register", async (req, res) => {
         .json({ error: "Пароль должен быть не менее 6 символов" });
     }
 
-    // Проверка уникальности email
     const existingUser = await db.User.findOne({ where: { email } });
     if (existingUser) {
       return res
@@ -28,13 +26,12 @@ router.post("/register", async (req, res) => {
         .json({ error: "Пользователь с таким email уже существует" });
     }
 
-    // Хеширование пароля
     const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await db.User.create({
       email,
       passwordHash,
-      role: role === "admin" ? "admin" : "user", // по умолчанию user
+      role: role === "admin" ? "admin" : "user",
     });
 
     res.status(201).json({
@@ -50,7 +47,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// POST /auth/login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -64,13 +60,11 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Неверный email или пароль" });
     }
 
-    // Сравнение пароля с хешем
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       return res.status(401).json({ error: "Неверный email или пароль" });
     }
 
-    // Генерация JWT
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
