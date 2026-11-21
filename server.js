@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+const http = require("http");
 const express = require("express");
 const { Op } = require("sequelize");
 const db = require("./models");
@@ -9,8 +10,12 @@ const { authenticate, isAdmin } = require("./middleware/auth");
 
 const connectMongo = require("./mongo/db");
 const mongoPhotoRoutes = require("./mongo/routes/photos");
+const initSocket = require("./socket");
+const photoSocialRoutes = require("./routes/photoSocial");
 
 const app = express();
+const server = http.createServer(app);
+initSocket(server);
 const PORT = process.env.PORT || 3000;
 
 app.use((req, res, next) => {
@@ -31,6 +36,7 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRoutes);
 app.use("/mongo/photos", mongoPhotoRoutes);
+app.use("/photos", photoSocialRoutes);
 
 const connectPostgres = async () => {
   try {
@@ -260,7 +266,7 @@ const start = async () => {
     await connectPostgres();
     await connectMongo();
 
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
   } catch (error) {
