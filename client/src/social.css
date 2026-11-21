@@ -1,0 +1,235 @@
+/* ============ Назад ============ */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-weight: 600;
+  transition: color 0.15s;
+}
+.back-link:hover {
+  color: var(--ink);
+}
+
+/* ============ Чат: правка и удаление ============ */
+.msg {
+  position: relative;
+}
+.msg-actions {
+  position: absolute;
+  top: -14px;
+  right: 8px;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.msg:hover .msg-actions,
+.msg:focus-within .msg-actions {
+  opacity: 1;
+}
+.msg-actions .icon-btn {
+  width: 28px;
+  height: 28px;
+}
+@media (hover: none) {
+  .msg-actions {
+    opacity: 1;
+  }
+}
+.msg-edit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 220px;
+}
+.msg-edit input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  outline: none;
+}
+.msg-edit .icon-btn {
+  width: 28px;
+  height: 28px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* ============ Страница фото ============ */
+.card-media-link {
+  display: block;
+}
+.card-media-link img {
+  cursor: zoom-in;
+}
+.card-title-link:hover {
+  color: var(--accent);
+}
+
+.photo-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
+  gap: 24px;
+  align-items: start;
+  padding: 16px;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+}
+.photo-detail-media {
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.photo-detail-media img {
+  width: 100%;
+  max-height: 78vh;
+  object-fit: contain;
+}
+.photo-detail-side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  padding: 8px 4px;
+}
+.photo-detail-side h1 {
+  overflow-wrap: anywhere;
+}
+.photo-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 9px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+}
+.like-btn:hover {
+  border-color: #f0506e;
+}
+.like-btn:active {
+  transform: scale(0.96);
+}
+.like-btn.is-liked {
+  border-color: #f0506e;
+  background: var(--danger-soft);
+  color: #f0506e;
+}
+
+.comments h2 {
+  margin-bottom: 12px;
+  font-size: 1.15rem;
+}
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 340px;
+  margin: 0 0 16px;
+  padding: 0 4px 0 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.comment {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.comment-body {
+  flex: 1;
+  min-width: 0;
+}
+.comment-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+.comment-head .muted {
+  font-size: 0.8rem;
+}
+.comment-body p {
+  overflow-wrap: anywhere;
+}
+.comment-actions {
+  display: flex;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.comment:hover .comment-actions,
+.comment:focus-within .comment-actions {
+  opacity: 1;
+}
+@media (hover: none) {
+  .comment-actions {
+    opacity: 1;
+  }
+}
+.comment-form,
+.comment-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.comment-form input,
+.comment-edit input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  outline: none;
+}
+.comment-form input:focus,
+.comment-edit input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.related {
+  margin-top: 40px;
+}
+.related h2 {
+  margin-bottom: 16px;
+}
+.card-link {
+  display: block;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.card-link:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-pop);
+}
+
+@media (max-width: 860px) {
+  .photo-detail {
+    grid-template-columns: 1fr;
+  }
+}
